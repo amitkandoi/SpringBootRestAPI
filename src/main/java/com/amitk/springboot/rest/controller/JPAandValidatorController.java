@@ -19,6 +19,7 @@ import com.amitk.springboot.rest.dto.SubjectDTO;
 import com.amitk.springboot.rest.dto.SubjectDTO.SaveAction;
 import com.amitk.springboot.rest.dto.SubjectDTO.UpdateAction;
 import com.amitk.springboot.rest.service.SubjectService;
+import com.amitk.springboot.rest.util.error.CustomException;
 
 /**
  * @author amitk
@@ -57,7 +58,7 @@ public class JPAandValidatorController {
 		LOGGER.info("Updating the Subject");
 		String id = subjectService.saveSubject(subject);
 		if(id==null) {
-			return new ResponseEntity<String>("Please Provide Valid Subject Id", HttpStatus.NOT_FOUND);
+			throw new CustomException("Please Provide Valid Subject Id");
 		}
 		return new ResponseEntity<String>("Saved id:= " + id, HttpStatus.OK);
 	}
@@ -70,7 +71,7 @@ public class JPAandValidatorController {
 	public ResponseEntity<?> getSubject(@PathVariable int id) {
 		SubjectDTO subjectDTO = subjectService.getSubject(id);
 		if (subjectDTO == null) {
-			return new ResponseEntity<String>("No Subject Found", HttpStatus.NOT_FOUND);
+			throw new CustomException("No Subject Found");
 		}
 		return new ResponseEntity<SubjectDTO>(subjectDTO, HttpStatus.OK);
 	}
@@ -79,7 +80,7 @@ public class JPAandValidatorController {
 	public ResponseEntity<?> getSubjectids() {
 		List<String> listOfData = subjectService.getSubjectIds();
 		if (listOfData == null) {
-			return new ResponseEntity<String>("No Subject Exist", HttpStatus.NOT_FOUND);
+			throw new CustomException("No Subject Exist");
 		}
 		return new ResponseEntity<List<String>>(listOfData, HttpStatus.OK);
 	}
@@ -97,7 +98,7 @@ public class JPAandValidatorController {
 	public ResponseEntity<?> getAllSubjects() {
 		List<SubjectDTO> listOfData = subjectService.getAllSubjects();
 		if (listOfData == null) {
-			return new ResponseEntity<String>("No Subject Exist", HttpStatus.NOT_FOUND);
+			throw new CustomException("No Subject Exist");
 		}
 		return new ResponseEntity<List<SubjectDTO>>(listOfData, HttpStatus.OK);
 	}
@@ -106,7 +107,7 @@ public class JPAandValidatorController {
 	public ResponseEntity<?> getAllSubjectsOrderById() {
 		List<SubjectDTO> listOfData = subjectService.getAllSubjectsOrdered();
 		if (listOfData == null) {
-			return new ResponseEntity<String>("No Subject Exist", HttpStatus.NOT_FOUND);
+			throw new CustomException("No Subject Exist");
 		}
 		return new ResponseEntity<List<SubjectDTO>>(listOfData, HttpStatus.OK);
 	}
@@ -116,7 +117,7 @@ public class JPAandValidatorController {
 		try {
 			subjectService.deleteSubject(id);
 		} catch (EmptyResultDataAccessException ex) {
-			return new ResponseEntity<String>("No Subject Exist with ID : " + id, HttpStatus.NOT_FOUND);
+			throw new CustomException("No Subject Exist with ID : " + id);
 		}
 		return new ResponseEntity<String>("Subject Deleted.", HttpStatus.OK);
 	}
@@ -126,7 +127,7 @@ public class JPAandValidatorController {
 		try {
 			subjectService.deleteAllSubject();
 		} catch (EmptyResultDataAccessException ex) {
-			return new ResponseEntity<String>("No Subject Exist", HttpStatus.NOT_FOUND);
+			throw new CustomException("No Subject Exist");
 		}
 		return new ResponseEntity<String>("All Subject Deleted", HttpStatus.OK);
 	}
