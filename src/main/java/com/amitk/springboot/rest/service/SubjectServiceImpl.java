@@ -4,7 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.amitk.springboot.rest.dto.StudentDTO;
@@ -16,13 +21,26 @@ import com.amitk.springboot.rest.repository.SubjectRepository;
 @Service
 public class SubjectServiceImpl implements SubjectService {
 
+	public static final Logger LOGGER = LoggerFactory.getLogger(SubjectServiceImpl.class);
+
 	@Autowired
 	SubjectRepository subjectRepository;
 
-	
+	@Transactional
 	public String saveSubject(SubjectDTO subjectDTO) {
 		Subject subject = prepareSubject(subjectDTO);
-		subjectRepository.save(subject);
+		if (subject.getId() == 0) {
+			subjectRepository.save(subject);
+			LOGGER.info("Subject saved");
+		} else {
+			if (subjectRepository.findById(subject.getId()).isPresent()) {
+				subjectRepository.save(subject);
+				LOGGER.info("Subject Updated");
+			} else {
+				LOGGER.info("No Subject Exist.");
+				return null;
+			}
+		}
 		return String.valueOf(subject.getId());
 	}
 
@@ -45,6 +63,7 @@ public class SubjectServiceImpl implements SubjectService {
 		return subjectRepository.findByName(name).stream().map(obj -> prepareSubjectDTO(obj))
 				.collect(Collectors.toList());
 	}
+
 	public SubjectDTO prepareSubjectDTO(Subject subject) {
 		SubjectDTO subjectDTO = new SubjectDTO();
 		subjectDTO.setId(String.valueOf(subject.getId()));
@@ -68,5 +87,29 @@ public class SubjectServiceImpl implements SubjectService {
 				.collect(Collectors.toList()));
 		return subject;
 	}
-	
+
+	@Override
+	public List<SubjectDTO> getAllSubjects() {
+		LOGGER.info("Getting All Subject");
+		return subjectRepository.findAll().stream().map(obj -> prepareSubjectDTO(obj)).collect(Collectors.toList());
+	}
+
+	@Override
+	public void deleteSubject(int id) {
+		LOGGER.info("Deleting Subject using ID " + id);
+		subjectRepository.deleteById(id);
+	}
+
+	@Override
+	public void deleteAllSubject() {
+		LOGGER.info("Deleting All Subject");
+		subjectRepository.deleteAll();
+	}
+
+	@Override
+	public List<SubjectDTO> getAllSubjectsOrdered() {
+		LOGGER.info("Getting All subject Ordered by ID");
+		return subjectRepository.findAll(new Sort(Sort.Direction.ASC,"id")).stream().map(obj -> prepareSubjectDTO(obj)).collect(Collectors.toList());
+	}
+
 }

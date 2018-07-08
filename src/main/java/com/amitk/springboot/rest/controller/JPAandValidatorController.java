@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -45,16 +46,19 @@ public class JPAandValidatorController {
 	 * @return
 	 */
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
-	public ResponseEntity<?> save(@Validated({SaveAction.class}) @RequestBody SubjectDTO subject) {
+	public ResponseEntity<?> save(@Validated({ SaveAction.class }) @RequestBody SubjectDTO subject) {
 		LOGGER.info("Saving the Subject");
 		String id = subjectService.saveSubject(subject);
 		return new ResponseEntity<String>("Saved id:= " + id, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/save", method = RequestMethod.PUT)
-	public ResponseEntity<?> updateSubject(@Validated({UpdateAction.class}) @RequestBody SubjectDTO subject) {
+	public ResponseEntity<?> updateSubject(@Validated({ UpdateAction.class }) @RequestBody SubjectDTO subject) {
 		LOGGER.info("Updating the Subject");
 		String id = subjectService.saveSubject(subject);
+		if(id==null) {
+			return new ResponseEntity<String>("Please Provide Valid Subject Id", HttpStatus.NOT_FOUND);
+		}
 		return new ResponseEntity<String>("Saved id:= " + id, HttpStatus.OK);
 	}
 
@@ -87,5 +91,43 @@ public class JPAandValidatorController {
 			return new ResponseEntity<String>("No Subject Exist", HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<List<SubjectDTO>>(listOfData, HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/getallsubjects", method = RequestMethod.GET)
+	public ResponseEntity<?> getAllSubjects() {
+		List<SubjectDTO> listOfData = subjectService.getAllSubjects();
+		if (listOfData == null) {
+			return new ResponseEntity<String>("No Subject Exist", HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<List<SubjectDTO>>(listOfData, HttpStatus.OK);
+	}
+	
+	@RequestMapping(value = "/getallsubjectsodered", method = RequestMethod.GET)
+	public ResponseEntity<?> getAllSubjectsOrderById() {
+		List<SubjectDTO> listOfData = subjectService.getAllSubjectsOrdered();
+		if (listOfData == null) {
+			return new ResponseEntity<String>("No Subject Exist", HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<List<SubjectDTO>>(listOfData, HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/deletesubject/{id}", method = RequestMethod.DELETE)
+	public ResponseEntity<?> deleteSubjectById(@PathVariable int id) {
+		try {
+			subjectService.deleteSubject(id);
+		} catch (EmptyResultDataAccessException ex) {
+			return new ResponseEntity<String>("No Subject Exist with ID : " + id, HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<String>("Subject Deleted.", HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/deletesubject", method = RequestMethod.DELETE)
+	public ResponseEntity<?> deleteSubject() {
+		try {
+			subjectService.deleteAllSubject();
+		} catch (EmptyResultDataAccessException ex) {
+			return new ResponseEntity<String>("No Subject Exist", HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<String>("All Subject Deleted", HttpStatus.OK);
 	}
 }
