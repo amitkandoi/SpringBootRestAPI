@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
 @Entity
@@ -27,6 +28,7 @@ public class Subject {
 	String type;
 	
 	@OneToMany(cascade=CascadeType.ALL,mappedBy="studentPK.subject", orphanRemoval=true)
+	@OrderBy("studentPK.id ASC")
 	List<Student> student=new ArrayList<Student>();
 
 	public int getId() {

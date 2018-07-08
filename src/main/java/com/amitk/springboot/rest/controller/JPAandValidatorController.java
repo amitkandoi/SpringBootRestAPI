@@ -87,7 +87,7 @@ public class JPAandValidatorController {
 	@RequestMapping(value = "/getsubjectbyname/{name}", method = RequestMethod.GET)
 	public ResponseEntity<?> getSubjectidByName(@PathVariable String name) {
 		List<SubjectDTO> listOfData = subjectService.getSubjectByName(name);
-		if (listOfData == null) {
+		if (listOfData == null || listOfData.size()==0) {
 			return new ResponseEntity<String>("No Subject Exist", HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<List<SubjectDTO>>(listOfData, HttpStatus.OK);
