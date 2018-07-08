@@ -69,7 +69,6 @@ public class SubjectDTO {
 	}
 
 	public void setStudent(List<StudentDTO> student) {
-		LOGGER.info("setting the student");
 		this.student = student;
 	}
 

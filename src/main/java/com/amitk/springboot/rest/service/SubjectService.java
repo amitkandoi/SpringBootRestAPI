@@ -10,4 +10,8 @@ public interface SubjectService {
 	public SubjectDTO getSubject(int id);
 	public List<String> getSubjectIds();
 	List<SubjectDTO> getSubjectByName(String name);
+	List<SubjectDTO> getAllSubjects();
+	void deleteSubject(int id);
+	void deleteAllSubject();
+	List<SubjectDTO> getAllSubjectsOrdered();
 }
