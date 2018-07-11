@@ -1,6 +1,12 @@
 package com.amitk.springboot.rest.controller;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,13 +19,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.amitk.springboot.rest.dto.SubjectDTO;
 import com.amitk.springboot.rest.dto.SubjectDTO.SaveAction;
 import com.amitk.springboot.rest.dto.SubjectDTO.UpdateAction;
 import com.amitk.springboot.rest.service.SubjectService;
 import com.amitk.springboot.rest.util.error.CustomException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author amitk
@@ -53,11 +63,25 @@ public class JPAandValidatorController {
 		return new ResponseEntity<String>("Saved id:= " + id, HttpStatus.OK);
 	}
 
+	@RequestMapping(value = "/savewithfile", method = RequestMethod.POST)
+	public ResponseEntity<?> saveFiles(@RequestPart("subject") String subjectDetail,
+			@RequestParam(value="files",required=false) MultipartFile[] files) throws IOException {
+		LOGGER.info("Saving the Subject");
+		SubjectDTO subject = new ObjectMapper().readValue(subjectDetail, SubjectDTO.class);
+		Set<ConstraintViolation<SubjectDTO>> violations = Validation.buildDefaultValidatorFactory().getValidator()
+				.validate(subject,SaveAction.class);
+		if (!violations.isEmpty()) {
+			throw new ConstraintViolationException("Please Correct Below Validation Error Message.",violations);
+		}
+		String id = subjectService.saveSubject(subject);
+		return new ResponseEntity<String>("Saved id:= " + id, HttpStatus.OK);
+	}
+
 	@RequestMapping(value = "/save", method = RequestMethod.PUT)
 	public ResponseEntity<?> updateSubject(@Validated({ UpdateAction.class }) @RequestBody SubjectDTO subject) {
 		LOGGER.info("Updating the Subject");
 		String id = subjectService.saveSubject(subject);
-		if(id==null) {
+		if (id == null) {
 			throw new CustomException("Please Provide Valid Subject Id");
 		}
 		return new ResponseEntity<String>("Saved id:= " + id, HttpStatus.OK);
@@ -88,7 +112,7 @@ public class JPAandValidatorController {
 	@RequestMapping(value = "/getsubjectbyname/{name}", method = RequestMethod.GET)
 	public ResponseEntity<?> getSubjectidByName(@PathVariable String name) {
 		List<SubjectDTO> listOfData = subjectService.getSubjectByName(name);
-		if (listOfData == null || listOfData.size()==0) {
+		if (listOfData == null || listOfData.size() == 0) {
 			return new ResponseEntity<String>("No Subject Exist", HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<List<SubjectDTO>>(listOfData, HttpStatus.OK);
@@ -102,7 +126,7 @@ public class JPAandValidatorController {
 		}
 		return new ResponseEntity<List<SubjectDTO>>(listOfData, HttpStatus.OK);
 	}
-	
+
 	@RequestMapping(value = "/getallsubjectsodered", method = RequestMethod.GET)
 	public ResponseEntity<?> getAllSubjectsOrderById() {
 		List<SubjectDTO> listOfData = subjectService.getAllSubjectsOrdered();
